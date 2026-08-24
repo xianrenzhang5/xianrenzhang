@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>躲避障碍小游戏</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; min-width: 320px; background: #17202a; color: #fff; font-family: "Microsoft YaHei", sans-serif; text-align: center; }
+        main { width: min(94vw, 500px); margin: 24px auto; }
+        h1 { color: #f6c85f; }
+        .信息 { display: flex; justify-content: space-between; margin: 12px 4px; color: #cbd5db; }
+        canvas { display: block; width: 100%; height: auto; border: 3px solid #f6c85f; background: #263746; }
+        button { min-width: 58px; min-height: 46px; margin: 12px 6px; border: 0; border-radius: 6px; color: #17202a; background: #f6c85f; font-size: 18px; cursor: pointer; }
+        #start { padding: 0 20px; font-size: 15px; }
+        p { color: #aebbc2; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>躲避障碍</h1>
+        <div class="信息"><span>分数：<strong id="score">0</strong></span><span id="status">点击开始</span></div>
+        <canvas id="game" width="480" height="640"></canvas>
+        <div>
+            <button id="left" aria-label="向左移动">←</button>
+            <button id="start">开始游戏</button>
+            <button id="right" aria-label="向右移动">→</button>
+        </div>
+        <p>使用键盘 ← → 或下方按钮躲开红色障碍物</p>
+    </main>
+    <script>
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const playerImage = new Image();
+        playerImage.src = "./img/mao48.jpg";
+        const scoreText = document.getElementById("score");
+        const statusText = document.getElementById("status");
+        const startButton = document.getElementById("start");
+        let player, obstacles, score, direction, lastTime, spawnTime, playing, frame;
+
+        function reset() {
+            player = { x: 220, y: 580, width: 40, height: 40 };
+            obstacles = [];
+            score = 0;
+            direction = 0;
+            spawnTime = 0;
+            scoreText.textContent = "0";
+            draw();
+        }
+
+        function begin() {
+            cancelAnimationFrame(frame);
+            reset();
+            playing = true;
+            statusText.textContent = "躲开它们！";
+            startButton.textContent = "重新开始";
+            lastTime = performance.now();
+            frame = requestAnimationFrame(loop);
+        }
+
+        function finish() {
+            playing = false;
+            direction = 0;
+            statusText.textContent = "撞到了！";
+            draw();
+        }
+
+        function addObstacle() {
+            const size = 30 + Math.random() * 25;
+            obstacles.push({ x: Math.random() * (480 - size), y: -size, size, speed: 160 + score * 2 });
+        }
+
+        function hit(obstacle) {
+            return player.x < obstacle.x + obstacle.size && player.x + player.width > obstacle.x && player.y < obstacle.y + obstacle.size && player.y + player.height > obstacle.y;
+        }
+
+        function update(delta) {
+            player.x = Math.max(8, Math.min(432, player.x + direction * 300 * delta));
+            spawnTime += delta;
+            if (spawnTime > Math.max(0.3, 0.8 - score / 500)) { addObstacle(); spawnTime = 0; }
+            obstacles.forEach(obstacle => obstacle.y += obstacle.speed * delta);
+            obstacles = obstacles.filter(obstacle => obstacle.y < 650);
+            score += delta * 10;
+            scoreText.textContent = Math.floor(score);
+            if (obstacles.some(hit)) finish();
+        }
+
+        function draw() {
+            ctx.fillStyle = "#263746";
+            ctx.fillRect(0, 0, 480, 640);
+            ctx.strokeStyle = "rgba(255,255,255,.08)";
+            for (let y = 0; y < 640; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(480, y); ctx.stroke(); }
+            obstacles.forEach(obstacle => { ctx.fillStyle = "#e85d5d"; ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size); });
+            if (playerImage.complete && playerImage.naturalWidth > 0) {
+                ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = "#f6c85f";
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+            }
+        }
+
+        function loop(time) {
+            const delta = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+            update(delta);
+            draw();
+            if (playing) frame = requestAnimationFrame(loop);
+        }
+
+        function control(button, value) {
+            button.addEventListener("pointerdown", () => direction = value);
+            button.addEventListener("pointerup", () => direction = 0);
+            button.addEventListener("pointerleave", () => direction = 0);
+        }
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowLeft") { event.preventDefault(); direction = -1; }
+            if (event.key === "ArrowRight") { event.preventDefault(); direction = 1; }
+            if (event.key === " " && !playing) begin();
+        });
+        document.addEventListener("keyup", event => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") direction = 0; });
+        control(document.getElementById("left"), -1);
+        control(document.getElementById("right"), 1);
+        startButton.addEventListener("click", begin);
+        reset();
+    </script>
+</body>
+</html>

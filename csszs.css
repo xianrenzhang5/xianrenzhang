@@ -1,0 +1,38 @@
+.主页面 {
+    width: 500px;
+    height: 600px;
+    border: 1px solid #000;
+    margin: 0 auto;
+    padding: 20px 30px;
+}
+/* 标题的样式 */
+h1 {
+    text-align: center;
+    font-family: '楷体';
+}
+/* 段落的样式 */
+p {
+    text-align: center;
+    font-family: '楷体';
+}
+/* 中间图片的样式 */
+.zhong {
+    display: block;
+    margin: 0 auto;
+}
+/* 关于a标签的样式 */
+a {
+    text-decoration: none;
+    color: #454242;
+}
+.游戏按钮 {
+    display: inline-block;
+    margin-left: 20px;
+    padding: 10px 18px;
+    color: #fff;
+    background-color: #e67e22;
+    border-radius: 6px;
+}
+.游戏按钮:hover {
+    background-color: #d35400;
+}
