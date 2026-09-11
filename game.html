@@ -26,7 +26,7 @@
             <button id="start">开始游戏</button>
             <button id="right" aria-label="向右移动">→</button>
         </div>
-        <p>使用键盘 ← → 或下方按钮躲开红色障碍物</p>
+        <p>使用键盘 ← → 或下方按钮躲开障碍物，绿色障碍物可进入奖励页面</p>
     </main>
     <script>
         const canvas = document.getElementById("game");
@@ -36,7 +36,7 @@
         const scoreText = document.getElementById("score");
         const statusText = document.getElementById("status");
         const startButton = document.getElementById("start");
-        let player, obstacles, score, direction, lastTime, spawnTime, playing, frame;
+        let player, obstacles, score, direction, lastTime, spawnTime, playing, frame, nextGreenScore;
 
         function reset() {
             player = { x: 220, y: 580, width: 40, height: 40 };
@@ -44,6 +44,7 @@
             score = 0;
             direction = 0;
             spawnTime = 0;
+            nextGreenScore = 100;
             scoreText.textContent = "0";
             draw();
         }
@@ -67,7 +68,12 @@
 
         function addObstacle() {
             const size = 30 + Math.random() * 25;
-            obstacles.push({ x: Math.random() * (480 - size), y: -size, size, speed: 160 + score * 2 });
+            obstacles.push({ x: Math.random() * (480 - size), y: -size, size, speed: 160 + score * 2, green: false });
+        }
+
+        function addGreenObstacle() {
+            const size = 36;
+            obstacles.push({ x: Math.random() * (480 - size), y: -size, size, speed: 160 + score * 2, green: true });
         }
 
         function hit(obstacle) {
@@ -80,9 +86,21 @@
             if (spawnTime > Math.max(0.3, 0.8 - score / 500)) { addObstacle(); spawnTime = 0; }
             obstacles.forEach(obstacle => obstacle.y += obstacle.speed * delta);
             obstacles = obstacles.filter(obstacle => obstacle.y < 650);
+            const previousScore = score;
             score += delta * 10;
+            while (previousScore < nextGreenScore && score >= nextGreenScore) {
+                addGreenObstacle();
+                nextGreenScore += 100;
+            }
             scoreText.textContent = Math.floor(score);
-            if (obstacles.some(hit)) finish();
+            const collidedObstacle = obstacles.find(hit);
+            if (collidedObstacle) {
+                if (collidedObstacle.green) {
+                    window.location.href = "jiangli.html";
+                } else {
+                    finish();
+                }
+            }
         }
 
         function draw() {
@@ -90,7 +108,10 @@
             ctx.fillRect(0, 0, 480, 640);
             ctx.strokeStyle = "rgba(255,255,255,.08)";
             for (let y = 0; y < 640; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(480, y); ctx.stroke(); }
-            obstacles.forEach(obstacle => { ctx.fillStyle = "#e85d5d"; ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size); });
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = obstacle.green ? "#35c759" : "#e85d5d";
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+            });
             if (playerImage.complete && playerImage.naturalWidth > 0) {
                 ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
             } else {
