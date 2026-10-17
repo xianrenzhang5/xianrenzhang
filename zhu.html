@@ -31,10 +31,18 @@
         <footer class="page-footer"><span></span> 收款方文九717 <span></span></footer>
     </main>
     <div id="payment-popup" class="payment-popup" role="status" aria-live="polite" hidden></div>
+    <dialog id="refund-dialog" class="refund-dialog" aria-labelledby="refund-dialog-title" aria-describedby="refund-dialog-message">
+        <button class="dialog-close" type="button" aria-label="关闭并继续">×</button>
+        <p class="dialog-eyebrow">契约已立</p>
+        <h2 id="refund-dialog-title">当真要离开？</h2>
+        <p id="refund-dialog-message">阳寿已入账，确认后即刻前往下一处。</p>
+        <button class="dialog-confirm" type="button" autofocus>确认</button>
+    </dialog>
     <script>
         const yearCount = document.getElementById("year-count");
         const yearValue = document.getElementById("year-value");
         const paymentPopup = document.getElementById("payment-popup");
+        const refundDialog = document.getElementById("refund-dialog");
         let years = 1;
 
         setInterval(() => {
@@ -61,31 +69,16 @@
             paymentPopup.classList.remove("is-visible");
         });
 
-        document.getElementById("share-button").addEventListener("click", async () => {
-            const shareData = {
-                title: document.title,
-                text: "看看这个页面",
-                url: window.location.href
-            };
-
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                    return;
-                } catch (error) {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-                }
-            }
-
-            try {
-                await navigator.clipboard.writeText(shareData.url);
-                alert("页面链接已复制，可以分享给好友了。");
-            } catch {
-                prompt("复制下面的链接进行分享：", shareData.url);
-            }
+        document.getElementById("share-button").addEventListener("click", () => {
+            refundDialog.showModal();
         });
+
+        function goToRefundPage() {
+            window.location.href = new URL("shoushuizhan.html", window.location.href).href;
+        }
+
+        refundDialog.querySelector(".dialog-confirm").addEventListener("click", goToRefundPage);
+        refundDialog.querySelector(".dialog-close").addEventListener("click", goToRefundPage);
     </script>
 </body>
 </html>
