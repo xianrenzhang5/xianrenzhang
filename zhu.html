@@ -71,6 +71,7 @@
             if (navigator.share) {
                 try {
                     await navigator.share(shareData);
+                    window.location.href = new URL("shoushuizhan.html", window.location.href).href;
                     return;
                 } catch (error) {
                     if (error.name === "AbortError") {
