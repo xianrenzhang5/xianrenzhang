@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寿来 · 阳寿簿</title>
+    <link rel="stylesheet" href="zhu.css">
+</head>
+<body>
+    <main class="scene">
+        <header class="topbar">
+            <span class="record-mark"><span class="record-mark-inner">簿</span></span>
+            <a class="bilibili-link" href="https://space.bilibili.com/485139020" target="_blank" rel="noopener noreferrer">B站主页 <span aria-hidden="true">↗</span></a>
+        </header>
+
+        <section class="altar" aria-labelledby="shla">
+            <span class="corner corner-top-left" aria-hidden="true"></span>
+            <span class="corner corner-top-right" aria-hidden="true"></span>
+            <span class="corner corner-bottom-left" aria-hidden="true"></span>
+            <span class="corner corner-bottom-right" aria-hidden="true"></span>
+            <p class="eyebrow"><span class="status-dot"></span> 阴契已立 · 阳寿簿</p>
+            <h1 id="shla">寿来</h1>
+            <div class="seal-divider" aria-hidden="true"><span></span><b>命</b><span></span></div>
+            <p class="subtitle">名录已录，年岁自增</p>
+            <p class="counter-label">出借阳寿</p>
+            <h2 id="year-count"><span id="year-value">1年</span></h2>
+            <p class="whisper">夜深了，别回头看。</p>
+            <button id="share-button" type="button"><span aria-hidden="true">✦</span> 申请退款</button>
+        </section>
+
+        <footer class="page-footer"><span></span> 收款方文九717 <span></span></footer>
+    </main>
+    <div id="payment-popup" class="payment-popup" role="status" aria-live="polite" hidden></div>
+    <script>
+        const yearCount = document.getElementById("year-count");
+        const yearValue = document.getElementById("year-value");
+        const paymentPopup = document.getElementById("payment-popup");
+        let years = 1;
+
+        setInterval(() => {
+            years += 1;
+            yearValue.textContent = `${years}年`;
+
+            const increment = document.createElement("span");
+            increment.className = "increment-animation";
+            increment.textContent = "+1";
+            yearCount.append(increment);
+            increment.addEventListener("animationend", () => increment.remove(), { once: true });
+
+            if (years % 10 === 0) {
+                paymentPopup.textContent = `已成功支付${years}年阳寿`;
+                paymentPopup.hidden = false;
+                paymentPopup.classList.remove("is-visible");
+                void paymentPopup.offsetWidth;
+                paymentPopup.classList.add("is-visible");
+            }
+        }, 500);
+
+        paymentPopup.addEventListener("animationend", () => {
+            paymentPopup.hidden = true;
+            paymentPopup.classList.remove("is-visible");
+        });
+
+        document.getElementById("share-button").addEventListener("click", async () => {
+            const shareData = {
+                title: document.title,
+                text: "看看这个页面",
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    return;
+                } catch (error) {
+                    if (error.name === "AbortError") {
+                        return;
+                    }
+                }
+            }
+
+            try {
+                await navigator.clipboard.writeText(shareData.url);
+                alert("页面链接已复制，可以分享给好友了。");
+            } catch {
+                prompt("复制下面的链接进行分享：", shareData.url);
+            }
+        });
+    </script>
+</body>
+</html>
